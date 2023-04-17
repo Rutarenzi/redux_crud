@@ -1,12 +1,21 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { useFetcher } from "react-router-dom";
 
-const initialState =[
-    { id: "1", name: "Ruta renzi", email:"rutarenzi@gmail.com"},
-    { id: "2", name: "Ruta axce34", email: "rutaaxcel@gmail.com"},
-]
+export const fetchUsers = createAsyncThunk("fetchUsers", async()=>{
+    const response = await fetch("https://jsonplaceholder.typicode.com/users");
+    const users = await response.json();
+    return users;
+   });
+// const initialState =[
+//     { id: "1", name: "Ruta renzi", email:"rutarenzi@gmail.com"},
+//     { id: "2", name: "Ruta axce34", email: "rutaaxcel@gmail.com"},
+// ]
 const usersSlice = createSlice({
     name: "users",
-    initialState,
+    initialState:{
+       entities: [],
+       loading: false,
+    },
     reducers: {
         userAdded(state, action){
             state.push(action.payload)
@@ -20,6 +29,19 @@ const usersSlice = createSlice({
             }
         },
     },
+    extraReducers: {
+        [fetchUsers.pending]:(state, action)=>{
+            state.loading = true;
+        },
+        [fetchUsers.fulfilled]: (state, action)=>{
+            state.loading = false;
+            state.entities = [...state.entities,...action.payload];
+        },
+        [useFetcher.rejected]: (state, action)=>{
+            state.loading = false;
+        }
+
+    }
 });
 
 export const { userAdded } = usersSlice.actions;
